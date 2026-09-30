@@ -21,7 +21,10 @@ process_sensors:
   - col06_level
   - col07_level
 
-hourly_aggregates: [mean, std, min, max, last_15min_mean, slope]
+# last_15min_mean and slope are dropped: `ts` is hour-resolution only (spec
+# 4.1's confirmed trap), so neither is computable without inventing a
+# within-hour row order the source data doesn't contain. See docs/findings.md.
+hourly_aggregates: [mean, std, min, max]
 sensor_lag_hours: [1, 2, 3]
 lab_silica_lag_hours: [1, 2, 3]   # relative to h - L, i.e. h-L, h-L-1, h-L-2
 

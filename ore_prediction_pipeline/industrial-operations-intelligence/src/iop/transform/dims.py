@@ -10,15 +10,16 @@ from iop.quality.rules import expand_ranges
 from iop.transform.columns import PROCESS_SENSOR_COLUMNS
 
 
+def shift_expr(hour_ts_col: str, shift_starts_hour: int):
+    """D02: three 8h shifts starting at shift_starts_hour (default 06:00): A/B/C.
+    Shared by dim_time and ML's calendar feature - one formula, not two."""
+    shift_index = ((F.hour(hour_ts_col) - F.lit(shift_starts_hour) + 24) % 24) / 8
+    return F.when(shift_index < 1, "A").when(shift_index < 2, "B").otherwise("C")
+
+
 def build_dim_time(hours_df: DataFrame, shift_starts_hour: int) -> DataFrame:
     """hours_df: any DataFrame with a distinct `hour_ts` column."""
-    # D02: three 8h shifts starting at shift_starts_hour (default 06:00): A/B/C.
-    shift_index = (
-        (F.hour("hour_ts") - F.lit(shift_starts_hour) + 24) % 24
-    ) / 8
-    shift = (
-        F.when(shift_index < 1, "A").when(shift_index < 2, "B").otherwise("C")
-    )
+    shift = shift_expr("hour_ts", shift_starts_hour)
     return hours_df.select("hour_ts").distinct().select(
         F.col("hour_ts").alias("hour_key"),
         F.col("hour_ts").alias("ts"),

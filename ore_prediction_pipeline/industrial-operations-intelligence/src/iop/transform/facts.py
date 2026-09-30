@@ -9,10 +9,16 @@ from iop.transform.columns import PROCESS_SENSOR_COLUMNS
 
 
 def build_fact_process_hourly(typed_df: DataFrame, dq_cfg: dict) -> DataFrame:
+    # last15min_mean and slope are deliberately NOT computed: `ts` is the raw
+    # CSV's own timestamp, which is hour-resolution only (spec 4.1's own
+    # confirmed trap - all ~180 rows in an hour share one identical value).
+    # F.minute("ts") is therefore always 0 and _secs (ts - hour_ts) is always
+    # 0, so a "last 15 minutes" or "within-hour slope" feature would be
+    # either silently all-null (confirmed: this is what shipped first) or
+    # would require inventing a within-hour row order the source data does
+    # not actually contain - exactly what spec 4.1 says not to do.
     expected_rows = dq_cfg["hour_completeness"]["expected_rows_per_hour"]
-    hourly = typed_df.withColumn("hour_ts", F.date_trunc("hour", F.col("ts"))).withColumn(
-        "_secs", F.unix_timestamp("ts") - F.unix_timestamp("hour_ts")
-    )
+    hourly = typed_df.withColumn("hour_ts", F.date_trunc("hour", F.col("ts")))
 
     aggs = [F.count(F.lit(1)).alias("row_count")]
     for sensor in PROCESS_SENSOR_COLUMNS:
@@ -22,15 +28,6 @@ def build_fact_process_hourly(typed_df: DataFrame, dq_cfg: dict) -> DataFrame:
             F.stddev(v).alias(f"{sensor}_std"),
             F.min(v).alias(f"{sensor}_min"),
             F.max(v).alias(f"{sensor}_max"),
-            F.avg(F.when(F.minute("ts") >= 45, v)).alias(f"{sensor}_last15min_mean"),
-            # Spark returns NULL for division by zero/null (non-ANSI, the
-            # default), so a var_samp==0 guard is unnecessary - and harmful:
-            # referencing var_samp("_secs") twice per sensor inside a
-            # CaseWhen, repeated across 19 sensors in one wide aggregate, is
-            # exactly the shape that makes Catalyst's expression
-            # canonicalization (CommutativeExpression.gatherCommutative)
-            # blow up and exhaust driver heap.
-            (F.covar_samp("_secs", v) / F.var_samp("_secs")).alias(f"{sensor}_slope"),
         ]
 
     result = hourly.groupBy("hour_ts").agg(*aggs)
