@@ -1,0 +1,34 @@
+# Data-quality thresholds (spec section 8). No thresholds live in code.
+
+ranges:
+  pct_iron_feed: [0, 100]
+  pct_silica_feed: [0, 100]
+  pct_iron_concentrate: [0, 100]
+  pct_silica_concentrate: [0, 100]
+  ore_pulp_ph: [0, 14]
+  ore_pulp_density: [0, 1000]
+  starch_flow: [0, null]
+  amina_flow: [0, null]
+  ore_pulp_flow: [0, null]
+  # Flotation Column 01-07 Air Flow / Level share one range each, applied per-column
+  column_air_flow: [0, null]
+  column_level: [null, null]
+
+date_range:
+  min: "2017-01-01"
+  max: "2017-12-31"
+
+sensor_health:
+  flatline_min_consecutive: 30      # ~10 minutes of 20s readings with near-zero variance
+  flatline_std_threshold: 1e-6
+  spike_zscore_threshold: 4.0
+  spike_rolling_window: 90          # rows (~30 minutes at 20s cadence)
+
+hour_completeness:
+  expected_rows_per_hour: 180       # 3600s / 20s
+  min_completeness_pct: 80          # D03; rows below this are excluded from training (not quarantined)
+
+lab_value_stability:
+  # DQ10 (D06): a lab column normally repeats one value across all rows in the hour.
+  # More than this many distinct values -> lab_is_interpolated = true for that hour.
+  max_distinct_values_per_hour: 1

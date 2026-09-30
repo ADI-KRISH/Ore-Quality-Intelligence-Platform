@@ -1,0 +1,42 @@
+mode: local
+
+paths:
+  raw_csv: "../MiningProcess_Flotation_Plant_Database.csv"
+  warehouse_root: "./data/warehouse"
+  bronze: "./data/warehouse/bronze"
+  silver: "./data/warehouse/silver"
+  gold: "./data/warehouse/gold"
+
+catalog:
+  # Databricks-only; unused locally, kept so keys match config/databricks.yaml
+  name: null
+  schema_bronze: null
+  schema_silver: null
+  schema_gold: null
+
+postgres:
+  host: "localhost"
+  port: 5432
+  database: "iop"
+  app_rw_user: "iop_app_rw"
+  app_rw_password_env: "IOP_PG_APP_RW_PASSWORD"
+  analyst_ro_user: "iop_analyst_ro"
+  analyst_ro_password_env: "IOP_PG_ANALYST_RO_PASSWORD"
+
+ml:
+  lab_delay_hours: 1        # D01
+  off_spec_percentile: 75   # D04
+  shift_starts_hour: 6      # D02: three 8h shifts starting 06:00 (A 06-14, B 14-22, C 22-06)
+  min_hour_completeness_pct: 80  # D03
+  split:
+    train_start: "2017-03-01"
+    train_end: "2017-06-30"
+    val_start: "2017-07-01"
+    val_end: "2017-07-31"
+    test_start: "2017-08-01"
+    test_end: "2017-09-30"
+  horizons: [0, 1, 2, 3, 4]
+
+mlflow:
+  tracking_uri: "./mlruns"
+  experiment_name: "iop-silica-soft-sensor"

@@ -1,0 +1,30 @@
+# Feature list and lag windows (spec section 9.2). Filled in during the ML stage.
+
+process_sensors:
+  - starch_flow
+  - amina_flow
+  - ore_pulp_flow
+  - ore_pulp_ph
+  - ore_pulp_density
+  - col01_air_flow
+  - col02_air_flow
+  - col03_air_flow
+  - col04_air_flow
+  - col05_air_flow
+  - col06_air_flow
+  - col07_air_flow
+  - col01_level
+  - col02_level
+  - col03_level
+  - col04_level
+  - col05_level
+  - col06_level
+  - col07_level
+
+hourly_aggregates: [mean, std, min, max, last_15min_mean, slope]
+sensor_lag_hours: [1, 2, 3]
+lab_silica_lag_hours: [1, 2, 3]   # relative to h - L, i.e. h-L, h-L-1, h-L-2
+
+# NEVER add pct_iron_concentrate here except inside ml/ablation.py.
+excluded_features:
+  - pct_iron_concentrate

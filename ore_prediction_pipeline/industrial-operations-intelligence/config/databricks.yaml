@@ -1,0 +1,41 @@
+mode: databricks
+
+paths:
+  raw_csv: "/Volumes/workspace/landing/ore_prediction/MiningProcess_Flotation_Plant_Database.csv"
+  warehouse_root: null   # unused on Databricks; tables live in Unity Catalog
+  bronze: null
+  silver: null
+  gold: null
+
+catalog:
+  name: "workspace"
+  schema_bronze: "bronze"
+  schema_silver: "silver"
+  schema_gold: "gold"
+
+postgres:
+  host_env: "IOP_PG_HOST"
+  port: 5432
+  database: "iop"
+  app_rw_user: "iop_app_rw"
+  app_rw_password_env: "IOP_PG_APP_RW_PASSWORD"
+  analyst_ro_user: "iop_analyst_ro"
+  analyst_ro_password_env: "IOP_PG_ANALYST_RO_PASSWORD"
+
+ml:
+  lab_delay_hours: 1
+  off_spec_percentile: 75
+  shift_starts_hour: 6
+  min_hour_completeness_pct: 80
+  split:
+    train_start: "2017-03-01"
+    train_end: "2017-06-30"
+    val_start: "2017-07-01"
+    val_end: "2017-07-31"
+    test_start: "2017-08-01"
+    test_end: "2017-09-30"
+  horizons: [0, 1, 2, 3, 4]
+
+mlflow:
+  tracking_uri: "databricks"
+  experiment_name: "/Shared/iop-silica-soft-sensor"

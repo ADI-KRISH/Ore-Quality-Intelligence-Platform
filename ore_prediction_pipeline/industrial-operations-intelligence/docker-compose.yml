@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: iop
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      IOP_PG_HOST: postgres
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    ports:
+      - "8501:8501"
+    # No default command: this service exists for `docker compose run --rm app <cmd>`
+    # (pytest, ruff, iop.cli, streamlit) via the Makefile, not for `docker compose up`.
+    command: ["sleep", "infinity"]
+
+volumes:
+  pgdata:
