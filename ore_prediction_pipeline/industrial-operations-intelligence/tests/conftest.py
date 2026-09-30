@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from iop.config import load_config
-from iop.ingest.bronze import read_raw_csv, to_bronze
+from iop.ingest.bronze import compute_checksum, read_raw_csv, to_bronze
 from iop.quality.rules import apply_dq_rules, dq04_drop_exact_duplicates, load_dq_config
 from iop.spark import get_spark
 
@@ -41,7 +41,8 @@ def spark(cfg, tmp_path_factory):
 @pytest.fixture(scope="module")
 def bronze_df(spark, cfg):
     raw = read_raw_csv(spark, cfg.paths.raw_csv)
-    df = to_bronze(raw, source_file=cfg.paths.raw_csv, batch_id="test-batch").cache()
+    checksum = compute_checksum(cfg.paths.raw_csv)
+    df = to_bronze(raw, source_file=cfg.paths.raw_csv, checksum=checksum, batch_id="test-batch").cache()
     df.count()  # materialize once; every test would otherwise recompute the read
     return df
 

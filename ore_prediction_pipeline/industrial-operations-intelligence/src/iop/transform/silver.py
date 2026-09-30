@@ -10,25 +10,18 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
 from iop.config import Config
-from iop.delta_io import merge_into, silver_location
+from iop.delta_io import bronze_location, merge_into, read_table, silver_location
 from iop.models import StageResult
 from iop.quality.rules import apply_dq_rules, dq04_drop_exact_duplicates, load_dq_config
 from iop.transform.lab import build_feed_quality, build_lab_results
 from iop.transform.sensor_health import build_sensor_health
 
 
-def _read_bronze(spark: SparkSession, cfg: Config):
-    if cfg.is_local:
-        return spark.read.format("delta").load(cfg.paths.bronze)
-    table = f"{cfg.catalog.name}.{cfg.catalog.schema_bronze}.flotation_raw"
-    return spark.table(table)
-
-
 def run(spark: SparkSession, cfg: Config) -> StageResult:
     started = datetime.utcnow()
     dq_cfg = load_dq_config()
 
-    bronze_df = _read_bronze(spark, cfg)
+    bronze_df = read_table(spark, cfg, bronze_location(cfg))
     rows_in = bronze_df.count()
 
     deduped_df, dq04_stats = dq04_drop_exact_duplicates(bronze_df)

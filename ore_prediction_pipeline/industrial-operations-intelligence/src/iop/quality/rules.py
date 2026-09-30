@@ -10,12 +10,21 @@ import yaml
 from pyspark.sql import Column, DataFrame
 from pyspark.sql import functions as F
 
-from iop.transform.columns import CANONICAL_COLUMNS, NUMERIC_COLUMNS
+from iop.transform.columns import CANONICAL_COLUMNS, NUMERIC_COLUMNS, RAW_TO_CANONICAL
 
 
 def load_dq_config(path: str | Path = "config/dq.yaml") -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
+
+
+def check_dq01_schema(raw_columns: list[str]) -> tuple[bool, list[str]]:
+    """DQ01: required columns present; schema matches the contract. Fails the
+    run (spec 8) - shared by bronze.run (which acts on it) and gold.run
+    (which re-checks it so DQ01 gets a fact_dq_results row every run, success
+    or not, the same as every other rule)."""
+    missing = [name for name in RAW_TO_CANONICAL if name not in raw_columns]
+    return (len(missing) == 0, missing)
 
 
 def expand_ranges(ranges_cfg: dict) -> dict[str, tuple]:
