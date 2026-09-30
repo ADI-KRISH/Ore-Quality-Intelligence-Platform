@@ -10,6 +10,7 @@ from iop import reports
 from iop.config import load_config
 from iop.ingest import bronze
 from iop.ml import score, train
+from iop.pipeline_log import log_run
 from iop.quality import runner as dq_runner
 from iop.serving import export
 from iop.spark import get_spark
@@ -42,6 +43,7 @@ def run_stage(stage: str, config_path: str) -> int:
             f"{result.rows_in} in -> {result.rows_out} out "
             f"({result.duration_seconds:.2f}s)"
         )
+        log_run(spark, cfg, result)
         if result.status == "failed":
             return 1
     return 0
