@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from iop.quality.rules import apply_dq_rules, dq04_drop_exact_duplicates
 from iop.transform.columns import PROCESS_SENSOR_COLUMNS
 from iop.transform.sensor_health import build_sensor_health
 
 
-def test_sensor_health_covers_every_sensor_and_hour(bronze_df, dq_cfg):
-    deduped, _ = dq04_drop_exact_duplicates(bronze_df)
-    typed_ok_df, _, _ = apply_dq_rules(deduped, dq_cfg)
+def test_sensor_health_covers_every_sensor_and_hour(dq_result, dq_cfg):
+    typed_ok_df = dq_result["typed_ok_df"]
     health = build_sensor_health(typed_ok_df, dq_cfg)
 
     assert set(health.columns) == {"hour_ts", "sensor", "flatline", "spike"}

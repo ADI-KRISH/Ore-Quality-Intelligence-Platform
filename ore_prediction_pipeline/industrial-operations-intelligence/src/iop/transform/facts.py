@@ -23,9 +23,14 @@ def build_fact_process_hourly(typed_df: DataFrame, dq_cfg: dict) -> DataFrame:
             F.min(v).alias(f"{sensor}_min"),
             F.max(v).alias(f"{sensor}_max"),
             F.avg(F.when(F.minute("ts") >= 45, v)).alias(f"{sensor}_last15min_mean"),
-            F.when(
-                F.var_samp("_secs") > 0, F.covar_samp("_secs", v) / F.var_samp("_secs")
-            ).alias(f"{sensor}_slope"),
+            # Spark returns NULL for division by zero/null (non-ANSI, the
+            # default), so a var_samp==0 guard is unnecessary - and harmful:
+            # referencing var_samp("_secs") twice per sensor inside a
+            # CaseWhen, repeated across 19 sensors in one wide aggregate, is
+            # exactly the shape that makes Catalyst's expression
+            # canonicalization (CommutativeExpression.gatherCommutative)
+            # blow up and exhaust driver heap.
+            (F.covar_samp("_secs", v) / F.var_samp("_secs")).alias(f"{sensor}_slope"),
         ]
 
     result = hourly.groupBy("hour_ts").agg(*aggs)

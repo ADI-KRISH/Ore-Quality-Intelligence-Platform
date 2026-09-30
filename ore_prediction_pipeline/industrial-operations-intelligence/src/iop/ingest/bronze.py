@@ -10,7 +10,6 @@ from datetime import datetime
 
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
-from pyspark.sql.types import StringType, StructField, StructType
 
 from iop.config import Config
 from iop.models import StageResult
@@ -18,14 +17,11 @@ from iop.transform.columns import RAW_TO_CANONICAL
 
 
 def read_raw_csv(spark: SparkSession, csv_path: str):
-    schema = StructType([StructField(name, StringType(), True) for name in RAW_TO_CANONICAL])
-    return spark.read.csv(
-        csv_path,
-        header=True,
-        schema=schema,
-        sep=",",
-        quote='"',
-    )
+    # No explicit schema: every column comes in as a string, matched by the
+    # file's own header names (inferSchema defaults to false). to_bronze then
+    # renames by name, so the raw file's column ORDER never matters here -
+    # only RAW_TO_CANONICAL's keys need to match the header text.
+    return spark.read.csv(csv_path, header=True, sep=",", quote='"')
 
 
 def to_bronze(raw_df, source_file: str, batch_id: str):

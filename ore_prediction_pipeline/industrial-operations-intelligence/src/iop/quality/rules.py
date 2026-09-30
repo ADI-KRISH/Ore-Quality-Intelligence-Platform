@@ -68,11 +68,16 @@ def apply_dq_rules(df: DataFrame, dq_cfg: dict) -> tuple[DataFrame, DataFrame, l
         parsed = parsed.withColumn(f"{col}__parsed", _parse_numeric(F.col(col)))
 
     ts_ok = F.col("ts_parsed").isNotNull() & F.col("ts_parsed").between(date_min, date_max)
-    numeric_ok = F.lit(True)
-    for col in NUMERIC_COLUMNS:
-        numeric_ok = numeric_ok & F.col(f"{col}__parsed").isNotNull()
 
-    range_ok = F.lit(True)
+    # Combined via array + array_contains, NOT a chain of ~19 nested `&`/`|`.
+    # A left-leaning AND/OR tree that deep is exactly the shape that makes
+    # Catalyst's expression canonicalization (CommutativeExpression /
+    # Or.orderCommutative) blow up and exhaust driver heap on this project's
+    # column count.
+    numeric_flags = [F.col(f"{col}__parsed").isNotNull() for col in NUMERIC_COLUMNS]
+    numeric_ok = ~F.array_contains(F.array(*numeric_flags), F.lit(False))
+
+    range_flags = []
     for col, (lo, hi) in ranges.items():
         value = F.col(f"{col}__parsed")
         bounds = F.lit(True)
@@ -80,7 +85,8 @@ def apply_dq_rules(df: DataFrame, dq_cfg: dict) -> tuple[DataFrame, DataFrame, l
             bounds = bounds & (value >= lo)
         if hi is not None:
             bounds = bounds & (value <= hi)
-        range_ok = range_ok & (value.isNull() | bounds)
+        range_flags.append(value.isNull() | bounds)
+    range_ok = ~F.array_contains(F.array(*range_flags), F.lit(False))
 
     parsed = parsed.withColumn(
         "_dq_rule_id",
@@ -88,8 +94,13 @@ def apply_dq_rules(df: DataFrame, dq_cfg: dict) -> tuple[DataFrame, DataFrame, l
         .when(~numeric_ok, F.lit("DQ02"))
         .when(~range_ok, F.lit("DQ05"))
         .otherwise(F.lit(None)),
-    )
+    ).cache()
 
+    # quarantine_df and typed_ok_df are sibling filters of `parsed`, and the
+    # per-rule stats below filter+count quarantine_df three more times.
+    # Without caching, every one of those re-runs the full parse/range-check
+    # plan above from scratch - `parsed` is what needs to be reused, not just
+    # its two downstream filters.
     rows_checked = parsed.count()
     quarantine_df = (
         parsed.filter(F.col("_dq_rule_id").isNotNull())

@@ -1,5 +1,11 @@
-"""Bronze -> Silver -> Gold on sample.csv, run twice: identical row counts and
-no duplicate Gold keys (spec 7.3 "Done means" / DQ09)."""
+"""Bronze -> Silver -> Gold on sample.csv, run twice: identical row counts,
+no duplicate Gold keys (spec 7.3 "Done means" / DQ09), and dq_checks passes.
+
+One test, not three: each full pipeline run is a real (non-trivial) amount of
+Spark work, and running it a third time in the same test session for a
+separate assertion was pushing the container's JVM heap into OOM territory
+for no added coverage.
+"""
 
 from __future__ import annotations
 
@@ -15,7 +21,7 @@ def _run_pipeline_once(spark, cfg):
     return silver_result, gold_result
 
 
-def test_pipeline_is_idempotent(spark, cfg):
+def test_pipeline_is_idempotent_and_dq_clean(spark, cfg):
     _, gold_1 = _run_pipeline_once(spark, cfg)
     _, gold_2 = _run_pipeline_once(spark, cfg)
 
@@ -29,8 +35,5 @@ def test_pipeline_is_idempotent(spark, cfg):
     dim_time = spark.read.format("delta").load(f"{cfg.paths.gold}/dim_time")
     assert dim_time.count() == dim_time.select("hour_key").distinct().count()
 
-
-def test_dq_checks_passes_after_a_clean_run(spark, cfg):
-    _run_pipeline_once(spark, cfg)
-    result = dq_runner.run(spark, cfg)
-    assert result.status == "success", result.extra
+    dq_result = dq_runner.run(spark, cfg)
+    assert dq_result.status == "success", dq_result.extra

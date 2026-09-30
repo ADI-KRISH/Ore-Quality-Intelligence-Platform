@@ -29,7 +29,15 @@ def _table_exists(spark: SparkSession, cfg: Config, location: str) -> bool:
 
 def merge_into(spark: SparkSession, cfg: Config, df: DataFrame, location: str, keys: list[str]) -> None:
     """Insert new keys, update matching ones. Re-running on the same input
-    data is a no-op (same row counts), which is what "idempotent" means here."""
+    data is a no-op (same row counts), which is what "idempotent" means here.
+
+    localCheckpoint materializes df and truncates its lineage first. Without
+    it, a source built from apply_dq_rules' many chained column expressions,
+    fed into repeated MERGEs across a full pipeline run (worse, twice, for an
+    idempotency test), grows a query plan deep enough for Catalyst's tree
+    traversal itself to exhaust driver heap - a real crash seen in this
+    project's test suite, not a hypothetical."""
+    df = df.localCheckpoint(eager=True)
     if not _table_exists(spark, cfg, location):
         writer = df.write.format("delta")
         if cfg.is_local:

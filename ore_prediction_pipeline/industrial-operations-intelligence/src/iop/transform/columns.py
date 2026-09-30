@@ -17,12 +17,19 @@ RAW_TO_CANONICAL: dict[str, str] = {
     "Ore Pulp Flow": "ore_pulp_flow",
     "Ore Pulp pH": "ore_pulp_ph",
     "Ore Pulp Density": "ore_pulp_density",
-    "% Iron Concentrate": "pct_iron_concentrate",
-    "% Silica Concentrate": "pct_silica_concentrate",
 }
+# Order here doesn't need to match the raw CSV: bronze.read_raw_csv reads
+# columns by their header name (no explicit schema), and to_bronze renames by
+# name too. An earlier version used an explicit positional schema and had to
+# match the file's real column order exactly; that bug (this dict listed the
+# two concentrate columns right after density, but the real file has them
+# last) silently shifted every column from position 9 onward. Renaming by
+# name instead of position removed that whole failure mode.
 for _n in range(1, 8):
     RAW_TO_CANONICAL[f"Flotation Column 0{_n} Air Flow"] = f"col{_n:02d}_air_flow"
     RAW_TO_CANONICAL[f"Flotation Column 0{_n} Level"] = f"col{_n:02d}_level"
+RAW_TO_CANONICAL["% Iron Concentrate"] = "pct_iron_concentrate"
+RAW_TO_CANONICAL["% Silica Concentrate"] = "pct_silica_concentrate"
 
 CANONICAL_COLUMNS = list(RAW_TO_CANONICAL.values())
 

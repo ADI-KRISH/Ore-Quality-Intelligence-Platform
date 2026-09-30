@@ -30,6 +30,11 @@ def get_spark(cfg: Config) -> SparkSession:
             "org.apache.spark.sql.delta.catalog.DeltaCatalog",
         )
         .config("spark.sql.shuffle.partitions", "4")
-        .master("local[*]")
+        .config("spark.driver.memory", "2g")
+        # local[*] would use every host core (this dev box has 16) in one JVM,
+        # which costs real per-task memory overhead for no benefit on a
+        # dataset this small, and made the driver an easy OOM-kill target
+        # under contention from other unrelated containers on this machine.
+        .master("local[2]")
     )
     return configure_spark_with_delta_pip(builder).getOrCreate()
