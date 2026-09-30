@@ -21,6 +21,10 @@ services:
       IOP_PG_HOST: postgres
     volumes:
       - .:/workspace
+      # config/local.yaml's raw_csv ("../MiningProcess_...csv") resolves to
+      # /MiningProcess_...csv given working_dir /workspace; only this one
+      # file from the parent folder is mounted, not the whole parent dir.
+      - ../MiningProcess_Flotation_Plant_Database.csv:/MiningProcess_Flotation_Plant_Database.csv:ro
     working_dir: /workspace
     ports:
       - "8501:8501"

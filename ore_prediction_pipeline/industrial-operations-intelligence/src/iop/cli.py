@@ -27,7 +27,19 @@ STAGE_REGISTRY = {
     "refresh_reports": reports.run,
 }
 
-PIPELINE_ORDER = list(STAGE_REGISTRY.keys())
+# Not STAGE_REGISTRY's key order: spec 12.1's diagram lists dq_checks before
+# build_gold, but this dq_checks reads gold.fact_dq_results (DQ06/08/09,
+# computed in build_gold) as the pipeline's final gate, so it must run after.
+PIPELINE_ORDER = [
+    "ingest_bronze",
+    "build_silver",
+    "build_gold",
+    "dq_checks",
+    "train_or_load_model",
+    "score_predictions",
+    "export_serving",
+    "refresh_reports",
+]
 
 
 def run_stage(stage: str, config_path: str) -> int:
