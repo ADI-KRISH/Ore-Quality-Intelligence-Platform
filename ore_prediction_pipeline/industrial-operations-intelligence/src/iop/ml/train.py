@@ -69,8 +69,15 @@ def _load_trainval_features(spark: SparkSession, cfg: Config) -> pd.DataFrame:
     return pdf
 
 
-def _run_fold(pdf: pd.DataFrame, fold: dict) -> dict:
+def _run_fold(pdf: pd.DataFrame, fold: dict, target_mode: str = "level") -> dict:
+    """target_mode "delta": models learn the CHANGE since the last known lab
+    value (target - lab_silica_lag1) and that value is added back before
+    scoring, so MAE is on the silica level either way and directly comparable
+    to persistence (which is exactly "predict zero change")."""
     train_pdf = _slice(pdf, fold["train_start"], fold["train_end"])
+    if target_mode == "delta":
+        # No last known value -> no defined change to learn from.
+        train_pdf = train_pdf[train_pdf["lab_silica_lag1"].notna()]
     val_pdf = _slice(pdf, fold["val_start"], fold["val_end"])
 
     # The persistence baseline needs lab_silica_lag1 (h - L); D06 nulls it
@@ -84,14 +91,19 @@ def _run_fold(pdf: pd.DataFrame, fold: dict) -> dict:
     train_X, train_y = prepare_matrix(train_pdf)
     val_X, val_y = prepare_matrix(val_pdf)
 
+    base = 0.0
+    if target_mode == "delta":
+        train_y = train_y - train_X["lab_silica_lag1"]
+        base = val_X["lab_silica_lag1"].to_numpy()
+
     predictions = {
         "persistence": fit_predict_persistence(val_X),
-        "ridge": fit_predict_ridge(train_X, train_y, val_X),
-        "lightgbm": fit_predict_lightgbm(train_X, train_y, val_X, objective="regression_l1"),
-        "xgboost": fit_predict_xgboost(train_X, train_y, val_X),
+        "ridge": base + fit_predict_ridge(train_X, train_y, val_X),
+        "lightgbm": base + fit_predict_lightgbm(train_X, train_y, val_X, objective="regression_l1"),
+        "xgboost": base + fit_predict_xgboost(train_X, train_y, val_X),
     }
-    p10 = fit_predict_lightgbm(train_X, train_y, val_X, objective="quantile", alpha=0.1)
-    p90 = fit_predict_lightgbm(train_X, train_y, val_X, objective="quantile", alpha=0.9)
+    p10 = base + fit_predict_lightgbm(train_X, train_y, val_X, objective="quantile", alpha=0.1)
+    p90 = base + fit_predict_lightgbm(train_X, train_y, val_X, objective="quantile", alpha=0.9)
 
     persistence_mae = mae(val_y, predictions["persistence"])
     fold_result = {
@@ -109,15 +121,16 @@ def _run_fold(pdf: pd.DataFrame, fold: dict) -> dict:
     return fold_result
 
 
-def _log_to_mlflow(cfg: Config, fold_results: list[dict]) -> None:
+def _log_to_mlflow(cfg: Config, fold_results: list[dict], target_mode: str) -> None:
     mlflow.set_tracking_uri(cfg.mlflow.tracking_uri)
     mlflow.set_experiment(cfg.mlflow.experiment_name)
     for i, fold_result in enumerate(fold_results):
         for model_name in fold_result["mae"]:
-            with mlflow.start_run(run_name=f"{model_name}_fold{i}"):
+            with mlflow.start_run(run_name=f"{model_name}_{target_mode}_fold{i}"):
                 mlflow.log_params(
                     {
                         "model": model_name,
+                        "target_mode": target_mode,
                         "fold": i,
                         "train_start": fold_result["fold"]["train_start"],
                         "train_end": fold_result["fold"]["train_end"],
@@ -134,13 +147,20 @@ def _log_to_mlflow(cfg: Config, fold_results: list[dict]) -> None:
                     mlflow.log_metric("p10_p90_coverage", fold_result["p10_p90_coverage"])
 
 
-def _print_comparison_table(fold_results: list[dict]) -> None:
+def _print_comparison_table(fold_results: list[dict], target_mode: str) -> None:
     models = list(fold_results[0]["mae"].keys())
     cv_mae = {m: sum(f["mae"][m] for f in fold_results) / len(fold_results) for m in models}
     cv_skill = {m: sum(f["skill"][m] for f in fold_results) / len(fold_results) for m in models}
     last = fold_results[-1]
 
-    print("\nValidation comparison (spec 9.3: last fold = train Mar-Jun, validate Jul)")
+    print(f"\nValidation comparison, target={target_mode} (last fold: train Mar-Jun, val Jul)")
+    for i, f in enumerate(fold_results):
+        skills = "  ".join(f"{m}={f['skill'][m]:+.3f}" for m in models if m != "persistence")
+        print(
+            f"  fold{i} val {f['fold']['val_start']} n_train={f['n_train']:<5} "
+            f"n_val={f['n_val']:<5} "
+            f"persistence_MAE={f['mae']['persistence']:.4f}  {skills}"
+        )
     print(f"{'model':<12} {'val_MAE':>10} {'val_skill':>10} {'cv_MAE(avg)':>12} {'cv_skill(avg)':>14}")
     for m in models:
         flag = " <-- SUSPICIOUS" if last["skill"][m] > SUSPICIOUS_SKILL_THRESHOLD else ""
@@ -156,11 +176,14 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
 
     pdf = _load_trainval_features(spark, cfg)
     folds = walk_forward_folds(cfg.ml.split.train_start, cfg.ml.split.val_start, cfg.ml.split.val_end)
-    fold_results = [_run_fold(pdf, fold) for fold in folds]
+    results_by_mode = {}
+    for target_mode in ("level", "delta"):
+        fold_results = [_run_fold(pdf, fold, target_mode) for fold in folds]
+        _log_to_mlflow(cfg, fold_results, target_mode)
+        _print_comparison_table(fold_results, target_mode)
+        results_by_mode[target_mode] = fold_results
 
-    _log_to_mlflow(cfg, fold_results)
-    _print_comparison_table(fold_results)
-
+    fold_results = results_by_mode["level"]
     last = fold_results[-1]
     suspicious = [m for m, s in last["skill"].items() if m != "persistence" and s > SUSPICIOUS_SKILL_THRESHOLD]
 
@@ -176,5 +199,6 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
             "last_fold_mae": last["mae"],
             "last_fold_skill": last["skill"],
             "suspicious_models": suspicious,
+            "last_fold_skill_delta": results_by_mode["delta"][-1]["skill"],
         },
     )
