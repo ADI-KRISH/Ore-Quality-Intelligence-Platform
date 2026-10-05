@@ -11,3 +11,11 @@ Fill from notebooks/01_profiling.ipynb. Write what you actually FOUND, with numb
 | Leakage via % Iron Concentrate (corr with target) | To confirm | Correlation not yet computed. | Excluded from all features except `ml/ablation.py` (CLAUDE.md rule); leak test enforces it. |
 | Persistence baseline is strong | Confirmed | Validation (Jul, trained on Mar-Jun): persistence MAE 0.4693. Ridge, LightGBM (default hyperparams) and XGBoost all score WORSE (skill -0.21, -0.04, -0.09 respectively) - none beat it yet. Walk-forward CV average tells the same story (skill -1.20, -0.04, -0.19). | Reported as the benchmark every model must beat (skill metric); none currently do, which is itself the honest result the spec's own framing expects here - not a bug, a reason to tune before claiming a win. |
 | Published high scores use random split / iron column | To confirm | Not yet audited against public notebooks. | Time-based splits only (D05); ablation table reports random-split score separately as a cautionary number, never as the headline metric. |
+
+## Validation experiments (D07, `iop.ml.experiments`; output in `reports/experiments_validation.json`, MLflow experiment `iop-silica-soft-sensor`)
+
+Test period untouched. Delta target, walk-forward May-Jul, April separate.
+- Regularised LightGBM + engineered features (reagent ratios, 3-lag lab-silica mean/std/trend) is the only family with positive skill vs persistence in every validated month.
+- PLS (2-10 components chosen by forward-chaining CV inside train) and SARIMAX (AR(1) + 3 top sensors) do not beat persistence; a persistence blend with PLS picks alpha=0 (no signal). April PLS blows up on ~205 training rows (reported, not averaged).
+- Raw LightGBM p10-p90 covers ~63-69%; split-conformal calibration on a chronological calibration slice brings it to ~80-87%.
+- Not tried: shorter training window and off-spec classifier (items 6 and 8 of the options list); rolling lab windows beyond 3 lags (each extra lag drops more training hours).

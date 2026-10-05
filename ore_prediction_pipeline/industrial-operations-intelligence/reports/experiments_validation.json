@@ -1,0 +1,318 @@
+{
+  "april": {
+    "val_month": "2017-04-01",
+    "n_train": 203,
+    "n_val": 576,
+    "persistence_mae": 0.5632638888888889,
+    "mae": {
+      "persistence": 0.5632638888888889,
+      "ridge": 2.740967361681216,
+      "lightgbm_default": 0.5590493901195361,
+      "pls": 5091654768896.194,
+      "lightgbm_reg": 0.5612296641999772,
+      "lightgbm_reg+feats": 0.5636170138990404,
+      "pls+feats": 3612060358186.5527,
+      "sarimax": 0.563792523107799,
+      "blend[pls]": 5091654768896.194,
+      "blend[lightgbm_reg]": 0.5612296641999772,
+      "blend[lightgbm_reg+feats]": 0.5636170138990404
+    },
+    "skill": {
+      "persistence": 0.0,
+      "ridge": -3.866222415017816,
+      "lightgbm_default": 0.007482281134099322,
+      "pls": -9039554761693.637,
+      "lightgbm_reg": 0.0036114949476424574,
+      "lightgbm_reg+feats": -0.0006269264142746422,
+      "pls+feats": -6412731988395.789,
+      "sarimax": -0.0009385196341149538,
+      "blend[pls]": -9039554761693.637,
+      "blend[lightgbm_reg]": 0.0036114949476424574,
+      "blend[lightgbm_reg+feats]": -0.0006269264142746422
+    },
+    "alpha": {
+      "blend[pls]": 1.0,
+      "blend[lightgbm_reg]": 1.0,
+      "blend[lightgbm_reg+feats]": 1.0
+    },
+    "coverage_raw": 0.6302083333333334,
+    "coverage_conformal": 0.8715277777777778
+  },
+  "walk_forward_from_may": [
+    {
+      "val_month": "2017-05-01",
+      "n_train": 779,
+      "n_val": 649,
+      "persistence_mae": 0.5060862865947612,
+      "mae": {
+        "persistence": 0.5060862865947612,
+        "ridge": 0.6755714769105616,
+        "lightgbm_default": 0.5054281256141454,
+        "pls": 0.6143830214674221,
+        "lightgbm_reg": 0.5032755682373776,
+        "lightgbm_reg+feats": 0.49476060263966426,
+        "pls+feats": 0.5971314995823656,
+        "sarimax": 0.5155784378720881,
+        "blend[pls]": 0.5060862865947612,
+        "blend[lightgbm_reg]": 0.5032755682373776,
+        "blend[lightgbm_reg+feats]": 0.5060862865947612
+      },
+      "skill": {
+        "persistence": 0.0,
+        "ridge": -0.334893860602693,
+        "lightgbm_default": 0.0013004916316627924,
+        "pls": -0.2139886769138588,
+        "lightgbm_reg": 0.00555383228479811,
+        "lightgbm_reg+feats": 0.02237895840115056,
+        "pls+feats": -0.17990057308252472,
+        "sarimax": -0.01875599384681137,
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.00555383228479811,
+        "blend[lightgbm_reg+feats]": 0.0
+      },
+      "alpha": {
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 1.0,
+        "blend[lightgbm_reg+feats]": 0.0
+      },
+      "coverage_raw": 0.6302003081664098,
+      "coverage_conformal": 0.8166409861325116
+    },
+    {
+      "val_month": "2017-06-01",
+      "n_train": 1428,
+      "n_val": 698,
+      "persistence_mae": 0.4306733524355303,
+      "mae": {
+        "persistence": 0.4306733524355303,
+        "ridge": 0.49130363456778214,
+        "lightgbm_default": 0.4101463540310781,
+        "pls": 0.4408658243109391,
+        "lightgbm_reg": 0.4098751927060231,
+        "lightgbm_reg+feats": 0.402920875250861,
+        "pls+feats": 0.42948043634520244,
+        "sarimax": 0.42606561075337995,
+        "blend[pls]": 0.4306733524355303,
+        "blend[lightgbm_reg]": 0.41043735315491076,
+        "blend[lightgbm_reg+feats]": 0.402920875250861
+      },
+      "skill": {
+        "persistence": 0.0,
+        "ridge": -0.1407802033475658,
+        "lightgbm_default": 0.04766256906392885,
+        "pls": -0.02366636295876834,
+        "lightgbm_reg": 0.04829219084925995,
+        "lightgbm_reg+feats": 0.06443973611955411,
+        "pls+feats": 0.002769886001958821,
+        "sarimax": 0.010698924500651796,
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.04698688499342152,
+        "blend[lightgbm_reg+feats]": 0.06443973611955411
+      },
+      "alpha": {
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.95,
+        "blend[lightgbm_reg+feats]": 1.0
+      },
+      "coverage_raw": 0.6891117478510028,
+      "coverage_conformal": 0.8037249283667621
+    },
+    {
+      "val_month": "2017-07-01",
+      "n_train": 2126,
+      "n_val": 699,
+      "persistence_mae": 0.46931330472103,
+      "mae": {
+        "persistence": 0.46931330472103,
+        "ridge": 0.5524786275181163,
+        "lightgbm_default": 0.45678676045393174,
+        "pls": 0.516274450970095,
+        "lightgbm_reg": 0.458879875632554,
+        "lightgbm_reg+feats": 0.45073270567180007,
+        "pls+feats": 0.5125041230963908,
+        "sarimax": 0.483922554183334,
+        "blend[pls]": 0.46931330472103,
+        "blend[lightgbm_reg]": 0.458879875632554,
+        "blend[lightgbm_reg+feats]": 0.45073270567180007
+      },
+      "skill": {
+        "persistence": 0.0,
+        "ridge": -0.17720640339936988,
+        "lightgbm_default": 0.02669121915165884,
+        "pls": -0.10006353064501261,
+        "lightgbm_reg": 0.022231266370506653,
+        "lightgbm_reg+feats": 0.03959103409666731,
+        "pls+feats": -0.09202981876048533,
+        "sarimax": -0.031128990623839448,
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.022231266370506653,
+        "blend[lightgbm_reg+feats]": 0.03959103409666731
+      },
+      "alpha": {
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 1.0,
+        "blend[lightgbm_reg+feats]": 1.0
+      },
+      "coverage_raw": 0.6938483547925608,
+      "coverage_conformal": 0.8011444921316166
+    }
+  ],
+  "all": [
+    {
+      "val_month": "2017-04-01",
+      "n_train": 203,
+      "n_val": 576,
+      "persistence_mae": 0.5632638888888889,
+      "mae": {
+        "persistence": 0.5632638888888889,
+        "ridge": 2.740967361681216,
+        "lightgbm_default": 0.5590493901195361,
+        "pls": 5091654768896.194,
+        "lightgbm_reg": 0.5612296641999772,
+        "lightgbm_reg+feats": 0.5636170138990404,
+        "pls+feats": 3612060358186.5527,
+        "sarimax": 0.563792523107799,
+        "blend[pls]": 5091654768896.194,
+        "blend[lightgbm_reg]": 0.5612296641999772,
+        "blend[lightgbm_reg+feats]": 0.5636170138990404
+      },
+      "skill": {
+        "persistence": 0.0,
+        "ridge": -3.866222415017816,
+        "lightgbm_default": 0.007482281134099322,
+        "pls": -9039554761693.637,
+        "lightgbm_reg": 0.0036114949476424574,
+        "lightgbm_reg+feats": -0.0006269264142746422,
+        "pls+feats": -6412731988395.789,
+        "sarimax": -0.0009385196341149538,
+        "blend[pls]": -9039554761693.637,
+        "blend[lightgbm_reg]": 0.0036114949476424574,
+        "blend[lightgbm_reg+feats]": -0.0006269264142746422
+      },
+      "alpha": {
+        "blend[pls]": 1.0,
+        "blend[lightgbm_reg]": 1.0,
+        "blend[lightgbm_reg+feats]": 1.0
+      },
+      "coverage_raw": 0.6302083333333334,
+      "coverage_conformal": 0.8715277777777778
+    },
+    {
+      "val_month": "2017-05-01",
+      "n_train": 779,
+      "n_val": 649,
+      "persistence_mae": 0.5060862865947612,
+      "mae": {
+        "persistence": 0.5060862865947612,
+        "ridge": 0.6755714769105616,
+        "lightgbm_default": 0.5054281256141454,
+        "pls": 0.6143830214674221,
+        "lightgbm_reg": 0.5032755682373776,
+        "lightgbm_reg+feats": 0.49476060263966426,
+        "pls+feats": 0.5971314995823656,
+        "sarimax": 0.5155784378720881,
+        "blend[pls]": 0.5060862865947612,
+        "blend[lightgbm_reg]": 0.5032755682373776,
+        "blend[lightgbm_reg+feats]": 0.5060862865947612
+      },
+      "skill": {
+        "persistence": 0.0,
+        "ridge": -0.334893860602693,
+        "lightgbm_default": 0.0013004916316627924,
+        "pls": -0.2139886769138588,
+        "lightgbm_reg": 0.00555383228479811,
+        "lightgbm_reg+feats": 0.02237895840115056,
+        "pls+feats": -0.17990057308252472,
+        "sarimax": -0.01875599384681137,
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.00555383228479811,
+        "blend[lightgbm_reg+feats]": 0.0
+      },
+      "alpha": {
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 1.0,
+        "blend[lightgbm_reg+feats]": 0.0
+      },
+      "coverage_raw": 0.6302003081664098,
+      "coverage_conformal": 0.8166409861325116
+    },
+    {
+      "val_month": "2017-06-01",
+      "n_train": 1428,
+      "n_val": 698,
+      "persistence_mae": 0.4306733524355303,
+      "mae": {
+        "persistence": 0.4306733524355303,
+        "ridge": 0.49130363456778214,
+        "lightgbm_default": 0.4101463540310781,
+        "pls": 0.4408658243109391,
+        "lightgbm_reg": 0.4098751927060231,
+        "lightgbm_reg+feats": 0.402920875250861,
+        "pls+feats": 0.42948043634520244,
+        "sarimax": 0.42606561075337995,
+        "blend[pls]": 0.4306733524355303,
+        "blend[lightgbm_reg]": 0.41043735315491076,
+        "blend[lightgbm_reg+feats]": 0.402920875250861
+      },
+      "skill": {
+        "persistence": 0.0,
+        "ridge": -0.1407802033475658,
+        "lightgbm_default": 0.04766256906392885,
+        "pls": -0.02366636295876834,
+        "lightgbm_reg": 0.04829219084925995,
+        "lightgbm_reg+feats": 0.06443973611955411,
+        "pls+feats": 0.002769886001958821,
+        "sarimax": 0.010698924500651796,
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.04698688499342152,
+        "blend[lightgbm_reg+feats]": 0.06443973611955411
+      },
+      "alpha": {
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.95,
+        "blend[lightgbm_reg+feats]": 1.0
+      },
+      "coverage_raw": 0.6891117478510028,
+      "coverage_conformal": 0.8037249283667621
+    },
+    {
+      "val_month": "2017-07-01",
+      "n_train": 2126,
+      "n_val": 699,
+      "persistence_mae": 0.46931330472103,
+      "mae": {
+        "persistence": 0.46931330472103,
+        "ridge": 0.5524786275181163,
+        "lightgbm_default": 0.45678676045393174,
+        "pls": 0.516274450970095,
+        "lightgbm_reg": 0.458879875632554,
+        "lightgbm_reg+feats": 0.45073270567180007,
+        "pls+feats": 0.5125041230963908,
+        "sarimax": 0.483922554183334,
+        "blend[pls]": 0.46931330472103,
+        "blend[lightgbm_reg]": 0.458879875632554,
+        "blend[lightgbm_reg+feats]": 0.45073270567180007
+      },
+      "skill": {
+        "persistence": 0.0,
+        "ridge": -0.17720640339936988,
+        "lightgbm_default": 0.02669121915165884,
+        "pls": -0.10006353064501261,
+        "lightgbm_reg": 0.022231266370506653,
+        "lightgbm_reg+feats": 0.03959103409666731,
+        "pls+feats": -0.09202981876048533,
+        "sarimax": -0.031128990623839448,
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 0.022231266370506653,
+        "blend[lightgbm_reg+feats]": 0.03959103409666731
+      },
+      "alpha": {
+        "blend[pls]": 0.0,
+        "blend[lightgbm_reg]": 1.0,
+        "blend[lightgbm_reg+feats]": 1.0
+      },
+      "coverage_raw": 0.6938483547925608,
+      "coverage_conformal": 0.8011444921316166
+    }
+  ]
+}
