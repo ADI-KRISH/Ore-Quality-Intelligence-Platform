@@ -36,7 +36,9 @@ def build_fact_process_hourly(typed_df: DataFrame, dq_cfg: dict) -> DataFrame:
     )
 
 
-def compute_off_spec_threshold(lab_results: DataFrame, train_start: str, train_end: str, percentile: int) -> float:
+def compute_off_spec_threshold(
+    lab_results: DataFrame, train_start: str, train_end: str, percentile: int
+) -> float:
     """D04: off-spec = above this percentile of TRAINING silica only (never
     test/val, and never an hour flagged lab_is_interpolated - D06)."""
     training = lab_results.filter(
@@ -44,7 +46,9 @@ def compute_off_spec_threshold(lab_results: DataFrame, train_start: str, train_e
         & (F.col("hour_ts") <= train_end)
         & (~F.col("lab_is_interpolated"))
     )
-    row = training.selectExpr(f"percentile_approx(pct_silica_concentrate, {percentile / 100}) as p").first()
+    row = training.selectExpr(
+        f"percentile_approx(pct_silica_concentrate, {percentile / 100}) as p"
+    ).first()
     return float(row["p"])
 
 

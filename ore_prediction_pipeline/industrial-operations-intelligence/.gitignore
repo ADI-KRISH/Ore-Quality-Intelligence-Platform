@@ -11,3 +11,4 @@ mlruns/
 .ipynb_checkpoints/
 .claude/settings.local.json
 !tests/data/
+logs/

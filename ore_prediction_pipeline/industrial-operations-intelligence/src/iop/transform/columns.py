@@ -37,13 +37,17 @@ CANONICAL_COLUMNS = list(RAW_TO_CANONICAL.values())
 # except the timestamp).
 NUMERIC_COLUMNS = [c for c in CANONICAL_COLUMNS if c != "ts"]
 
-PROCESS_SENSOR_COLUMNS = [
-    "starch_flow",
-    "amina_flow",
-    "ore_pulp_flow",
-    "ore_pulp_ph",
-    "ore_pulp_density",
-] + [f"col{n:02d}_air_flow" for n in range(1, 8)] + [f"col{n:02d}_level" for n in range(1, 8)]
+PROCESS_SENSOR_COLUMNS = (
+    [
+        "starch_flow",
+        "amina_flow",
+        "ore_pulp_flow",
+        "ore_pulp_ph",
+        "ore_pulp_density",
+    ]
+    + [f"col{n:02d}_air_flow" for n in range(1, 8)]
+    + [f"col{n:02d}_level" for n in range(1, 8)]
+)
 
 LAB_COLUMNS = ["pct_iron_concentrate", "pct_silica_concentrate"]
 FEED_COLUMNS = ["pct_iron_feed", "pct_silica_feed"]

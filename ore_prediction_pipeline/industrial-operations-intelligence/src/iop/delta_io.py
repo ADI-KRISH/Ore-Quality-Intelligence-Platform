@@ -39,7 +39,9 @@ def read_table(spark: SparkSession, cfg: Config, location: str) -> DataFrame:
     return spark.table(location)
 
 
-def merge_into(spark: SparkSession, cfg: Config, df: DataFrame, location: str, keys: list[str]) -> None:
+def merge_into(
+    spark: SparkSession, cfg: Config, df: DataFrame, location: str, keys: list[str]
+) -> None:
     """Insert new keys, update matching ones. Re-running on the same input
     data is a no-op (same row counts), which is what "idempotent" means here.
 
@@ -58,7 +60,9 @@ def merge_into(spark: SparkSession, cfg: Config, df: DataFrame, location: str, k
             writer.saveAsTable(location)
         return
 
-    target = DeltaTable.forPath(spark, location) if cfg.is_local else DeltaTable.forName(spark, location)
+    target = (
+        DeltaTable.forPath(spark, location) if cfg.is_local else DeltaTable.forName(spark, location)
+    )
     condition = " AND ".join(f"t.{k} = s.{k}" for k in keys)
     (
         target.alias("t")

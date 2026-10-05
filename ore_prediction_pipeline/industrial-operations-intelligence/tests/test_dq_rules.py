@@ -55,9 +55,9 @@ def test_dq05_quarantines_the_three_out_of_range_rows(dq_result):
 
 def test_dq05_passes_rows_within_range(dq_result):
     typed_ok_df = dq_result["typed_ok_df"]
-    assert typed_ok_df.filter((typed_ok_df.ore_pulp_ph >= 0) & (typed_ok_df.ore_pulp_ph <= 14)).count() == (
-        typed_ok_df.count()
-    )
+    assert typed_ok_df.filter(
+        (typed_ok_df.ore_pulp_ph >= 0) & (typed_ok_df.ore_pulp_ph <= 14)
+    ).count() == (typed_ok_df.count())
 
 
 def test_silver_pipeline_reconciles_to_original_row_count(bronze_df, dq_result):
@@ -66,5 +66,7 @@ def test_silver_pipeline_reconciles_to_original_row_count(bronze_df, dq_result):
     dq04_stats = dq_result["dq04_stats"]
     typed_ok_df = dq_result["typed_ok_df"]
     quarantine_df = dq_result["quarantine_df"]
-    assert bronze_df.count() == dq04_stats["rows_failed"] + quarantine_df.count() + typed_ok_df.count()
+    assert (
+        bronze_df.count() == dq04_stats["rows_failed"] + quarantine_df.count() + typed_ok_df.count()
+    )
     assert typed_ok_df.count() == 714

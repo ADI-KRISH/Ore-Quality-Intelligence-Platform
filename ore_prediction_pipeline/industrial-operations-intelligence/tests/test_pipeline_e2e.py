@@ -45,7 +45,10 @@ def test_pipeline_is_idempotent_and_dq_clean(spark, cfg):
     assert bronze_count == bronze_1.rows_out  # unchanged by the skipped second ingest
 
     fact_process_hourly = spark.read.format("delta").load(f"{cfg.paths.gold}/fact_process_hourly")
-    assert fact_process_hourly.count() == fact_process_hourly.select("hour_ts", "plant_key").distinct().count()
+    assert (
+        fact_process_hourly.count()
+        == fact_process_hourly.select("hour_ts", "plant_key").distinct().count()
+    )
 
     dim_time = spark.read.format("delta").load(f"{cfg.paths.gold}/dim_time")
     assert dim_time.count() == dim_time.select("hour_key").distinct().count()

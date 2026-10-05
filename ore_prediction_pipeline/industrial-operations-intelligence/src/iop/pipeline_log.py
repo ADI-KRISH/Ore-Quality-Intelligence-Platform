@@ -28,6 +28,4 @@ def log_run(spark: SparkSession, cfg: Config, result: StageResult) -> None:
         ],
         ["run_id", "stage", "started_at", "finished_at", "rows_in", "rows_out", "status"],
     )
-    merge_into(
-        spark, cfg, row, gold_location(cfg, "fact_pipeline_runs"), ["run_id", "stage"]
-    )
+    merge_into(spark, cfg, row, gold_location(cfg, "fact_pipeline_runs"), ["run_id", "stage"])

@@ -55,8 +55,9 @@ def build_sensor_health(typed_df: DataFrame, dq_cfg: dict) -> DataFrame:
         .withColumn("flat_std", F.stddev("value").over(w_flat))
         .withColumn(
             "zscore",
-            F.when(F.col("roll_std") > 0, (F.col("value") - F.col("roll_mean")) / F.col("roll_std"))
-            .otherwise(F.lit(0.0)),
+            F.when(
+                F.col("roll_std") > 0, (F.col("value") - F.col("roll_mean")) / F.col("roll_std")
+            ).otherwise(F.lit(0.0)),
         )
         .withColumn("is_flatline_point", F.col("flat_std") < F.lit(std_threshold))
         .withColumn("is_spike_point", F.abs(F.col("zscore")) > F.lit(z_threshold))

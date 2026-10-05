@@ -79,7 +79,10 @@ def build_features(
         # null it out rather than pass the value through.
         base = base.withColumn(
             f"lab_silica_lag{lag}",
-            F.when(~F.coalesce(F.col(f"_lab_interp_lag{lag}"), F.lit(False)), F.col(f"lab_silica_lag{lag}")),
+            F.when(
+                ~F.coalesce(F.col(f"_lab_interp_lag{lag}"), F.lit(False)),
+                F.col(f"lab_silica_lag{lag}"),
+            ),
         ).drop(f"_lab_interp_lag{lag}")
 
     base = base.withColumn("hour_of_day", F.hour("hour_ts")).withColumn(
@@ -99,5 +102,7 @@ def build_features(
         F.col("pct_silica_concentrate").alias("target"),
         F.col("lab_is_interpolated").alias("_target_interp"),
     )
-    result = base.join(target_source, ["hour_ts", "plant_key"], "inner").filter(~F.col("_target_interp"))
+    result = base.join(target_source, ["hour_ts", "plant_key"], "inner").filter(
+        ~F.col("_target_interp")
+    )
     return result.drop("_target_interp")

@@ -20,15 +20,19 @@ def shift_expr(hour_ts_col: str, shift_starts_hour: int):
 def build_dim_time(hours_df: DataFrame, shift_starts_hour: int) -> DataFrame:
     """hours_df: any DataFrame with a distinct `hour_ts` column."""
     shift = shift_expr("hour_ts", shift_starts_hour)
-    return hours_df.select("hour_ts").distinct().select(
-        F.col("hour_ts").alias("hour_key"),
-        F.col("hour_ts").alias("ts"),
-        F.to_date("hour_ts").alias("date"),
-        F.hour("hour_ts").alias("hour"),
-        shift.alias("shift"),
-        F.dayofweek("hour_ts").alias("day_of_week"),
-        F.weekofyear("hour_ts").alias("week"),
-        F.month("hour_ts").alias("month"),
+    return (
+        hours_df.select("hour_ts")
+        .distinct()
+        .select(
+            F.col("hour_ts").alias("hour_key"),
+            F.col("hour_ts").alias("ts"),
+            F.to_date("hour_ts").alias("date"),
+            F.hour("hour_ts").alias("hour"),
+            shift.alias("shift"),
+            F.dayofweek("hour_ts").alias("day_of_week"),
+            F.weekofyear("hour_ts").alias("week"),
+            F.month("hour_ts").alias("month"),
+        )
     )
 
 
@@ -43,7 +47,14 @@ def build_dim_sensor(spark: SparkSession, dq_cfg: dict) -> DataFrame:
         return "pulp"
 
     rows = [
-        (name, name, "unit_unknown", group_of(name), ranges.get(name, (None, None))[0], ranges.get(name, (None, None))[1])
+        (
+            name,
+            name,
+            "unit_unknown",
+            group_of(name),
+            ranges.get(name, (None, None))[0],
+            ranges.get(name, (None, None))[1],
+        )
         for name in PROCESS_SENSOR_COLUMNS
     ]
     return spark.createDataFrame(

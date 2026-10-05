@@ -62,7 +62,8 @@ def _load_trainval_features(spark: SparkSession, cfg: Config) -> pd.DataFrame:
     # Never touch the test period: filtered out here, in Spark, before
     # anything is collected to the driver.
     trainval = features.filter(
-        (F.col("hour_ts") >= cfg.ml.split.train_start) & (F.col("hour_ts") < cfg.ml.split.test_start)
+        (F.col("hour_ts") >= cfg.ml.split.train_start)
+        & (F.col("hour_ts") < cfg.ml.split.test_start)
     )
     pdf = trainval.toPandas()
     pdf["hour_ts"] = pdf["hour_ts"].astype(str)
@@ -141,7 +142,10 @@ def _log_to_mlflow(cfg: Config, fold_results: list[dict], target_mode: str) -> N
                     }
                 )
                 mlflow.log_metrics(
-                    {"mae": fold_result["mae"][model_name], "skill_vs_persistence": fold_result["skill"][model_name]}
+                    {
+                        "mae": fold_result["mae"][model_name],
+                        "skill_vs_persistence": fold_result["skill"][model_name],
+                    }
                 )
                 if model_name == "lightgbm":
                     mlflow.log_metric("p10_p90_coverage", fold_result["p10_p90_coverage"])
@@ -161,21 +165,28 @@ def _print_comparison_table(fold_results: list[dict], target_mode: str) -> None:
             f"n_val={f['n_val']:<5} "
             f"persistence_MAE={f['mae']['persistence']:.4f}  {skills}"
         )
-    print(f"{'model':<12} {'val_MAE':>10} {'val_skill':>10} {'cv_MAE(avg)':>12} {'cv_skill(avg)':>14}")
+    print(
+        f"{'model':<12} {'val_MAE':>10} {'val_skill':>10} {'cv_MAE(avg)':>12} {'cv_skill(avg)':>14}"
+    )
     for m in models:
         flag = " <-- SUSPICIOUS" if last["skill"][m] > SUSPICIOUS_SKILL_THRESHOLD else ""
         print(
             f"{m:<12} {last['mae'][m]:>10.4f} {last['skill'][m]:>10.3f} "
             f"{cv_mae[m]:>12.4f} {cv_skill[m]:>14.3f}{flag}"
         )
-    print(f"\nLightGBM p10-p90 coverage on last fold's val set: {last['p10_p90_coverage']:.3f} (target ~0.80)")
+    print(
+        f"\nLightGBM p10-p90 coverage on last fold's val set: "
+        f"{last['p10_p90_coverage']:.3f} (target ~0.80)"
+    )
 
 
 def run(spark: SparkSession, cfg: Config) -> StageResult:
     started = datetime.utcnow()
 
     pdf = _load_trainval_features(spark, cfg)
-    folds = walk_forward_folds(cfg.ml.split.train_start, cfg.ml.split.val_start, cfg.ml.split.val_end)
+    folds = walk_forward_folds(
+        cfg.ml.split.train_start, cfg.ml.split.val_start, cfg.ml.split.val_end
+    )
     results_by_mode = {}
     for target_mode in ("level", "delta"):
         fold_results = [_run_fold(pdf, fold, target_mode) for fold in folds]
@@ -185,7 +196,9 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
 
     fold_results = results_by_mode["level"]
     last = fold_results[-1]
-    suspicious = [m for m, s in last["skill"].items() if m != "persistence" and s > SUSPICIOUS_SKILL_THRESHOLD]
+    suspicious = [
+        m for m, s in last["skill"].items() if m != "persistence" and s > SUSPICIOUS_SKILL_THRESHOLD
+    ]
 
     return StageResult(
         stage="train_or_load_model",

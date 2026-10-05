@@ -42,7 +42,9 @@ def spark(cfg, tmp_path_factory):
 def bronze_df(spark, cfg):
     raw = read_raw_csv(spark, cfg.paths.raw_csv)
     checksum = compute_checksum(cfg.paths.raw_csv)
-    df = to_bronze(raw, source_file=cfg.paths.raw_csv, checksum=checksum, batch_id="test-batch").cache()
+    df = to_bronze(
+        raw, source_file=cfg.paths.raw_csv, checksum=checksum, batch_id="test-batch"
+    ).cache()
     df.count()  # materialize once; every test would otherwise recompute the read
     return df
 

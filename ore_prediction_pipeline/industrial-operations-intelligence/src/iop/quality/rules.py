@@ -58,7 +58,7 @@ def dq04_drop_exact_duplicates(bronze_df: DataFrame) -> tuple[DataFrame, dict]:
 
 
 def _parse_numeric(col: Column) -> Column:
-    """"55,2" -> 55.2. A comma is the only decimal separator in this dataset."""
+    """ "55,2" -> 55.2. A comma is the only decimal separator in this dataset."""
     return F.regexp_replace(col, ",", ".").cast("double")
 
 
@@ -120,9 +120,8 @@ def apply_dq_rules(df: DataFrame, dq_cfg: dict) -> tuple[DataFrame, DataFrame, l
     ok_select = [F.col("ts_parsed").alias("ts")] + [
         F.col(f"{col}__parsed").alias(col) for col in NUMERIC_COLUMNS
     ]
-    typed_ok_df = (
-        parsed.filter(F.col("_dq_rule_id").isNull())
-        .select(*ok_select, "_source_file", "_row_number", "_batch_id")
+    typed_ok_df = parsed.filter(F.col("_dq_rule_id").isNull()).select(
+        *ok_select, "_source_file", "_row_number", "_batch_id"
     )
 
     stats = [

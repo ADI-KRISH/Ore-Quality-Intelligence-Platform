@@ -49,7 +49,13 @@ def synthetic_gold(spark):
                 stats[f"{sensor}_min"] = 0.0
                 stats[f"{sensor}_max"] = 0.0
             process_rows.append(
-                {"hour_ts": ts, "plant_key": "plant_1", "row_count": 180, "completeness_pct": 100.0, **stats}
+                {
+                    "hour_ts": ts,
+                    "plant_key": "plant_1",
+                    "row_count": 180,
+                    "completeness_pct": 100.0,
+                    **stats,
+                }
             )
             lab_rows.append(
                 {
@@ -60,7 +66,9 @@ def synthetic_gold(spark):
                     "lab_is_interpolated": i in interpolated_hours,
                 }
             )
-            feed_rows.append({"hour_ts": ts, "pct_iron_feed": float(i), "pct_silica_feed": float(i)})
+            feed_rows.append(
+                {"hour_ts": ts, "pct_iron_feed": float(i), "pct_silica_feed": float(i)}
+            )
 
         process_cols = ["hour_ts", "plant_key", "row_count", "completeness_pct"] + [
             f"{s}_{stat}" for s in PROCESS_SENSOR_COLUMNS for stat in ("mean", "std", "min", "max")
@@ -154,8 +162,12 @@ def test_horizon_shifts_the_target_not_the_features(synthetic_gold):
     from iop.ml.features import build_features
 
     fact_process_hourly, feed_quality, fact_lab_quality = synthetic_gold()
-    f0 = build_features(fact_process_hourly, feed_quality, fact_lab_quality, ml_cfg=_ml_cfg(), horizon=0)
-    f2 = build_features(fact_process_hourly, feed_quality, fact_lab_quality, ml_cfg=_ml_cfg(), horizon=2)
+    f0 = build_features(
+        fact_process_hourly, feed_quality, fact_lab_quality, ml_cfg=_ml_cfg(), horizon=0
+    )
+    f2 = build_features(
+        fact_process_hourly, feed_quality, fact_lab_quality, ml_cfg=_ml_cfg(), horizon=2
+    )
 
     row0 = f0.filter(F.col("hour_ts") == _hour_ts(3)).first()
     row2 = f2.filter(F.col("hour_ts") == _hour_ts(3)).first()

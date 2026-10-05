@@ -43,11 +43,21 @@ def fit_predict_ridge(train_X: pd.DataFrame, train_y: pd.Series, val_X: pd.DataF
 
 
 def fit_predict_lightgbm(
-    train_X: pd.DataFrame, train_y: pd.Series, val_X: pd.DataFrame, objective: str = "regression_l1", alpha: float | None = None
+    train_X: pd.DataFrame,
+    train_y: pd.Series,
+    val_X: pd.DataFrame,
+    objective: str = "regression_l1",
+    alpha: float | None = None,
 ) -> np.ndarray:
     import lightgbm as lgb
 
-    kwargs = {"objective": objective, "n_estimators": 300, "learning_rate": 0.05, "num_leaves": 31, "verbosity": -1}
+    kwargs = {
+        "objective": objective,
+        "n_estimators": 300,
+        "learning_rate": 0.05,
+        "num_leaves": 31,
+        "verbosity": -1,
+    }
     if alpha is not None:
         kwargs["alpha"] = alpha
     model = lgb.LGBMRegressor(**kwargs)
@@ -55,11 +65,17 @@ def fit_predict_lightgbm(
     return model.predict(val_X)
 
 
-def fit_predict_xgboost(train_X: pd.DataFrame, train_y: pd.Series, val_X: pd.DataFrame) -> np.ndarray:
+def fit_predict_xgboost(
+    train_X: pd.DataFrame, train_y: pd.Series, val_X: pd.DataFrame
+) -> np.ndarray:
     import xgboost as xgb
 
     model = xgb.XGBRegressor(
-        objective="reg:absoluteerror", n_estimators=300, learning_rate=0.05, max_depth=6, verbosity=0
+        objective="reg:absoluteerror",
+        n_estimators=300,
+        learning_rate=0.05,
+        max_depth=6,
+        verbosity=0,
     )
     model.fit(train_X, train_y)
     return model.predict(val_X)

@@ -15,7 +15,11 @@ from iop.delta_io import bronze_location, gold_location, merge_into, read_table,
 from iop.models import StageResult
 from iop.quality.rules import check_dq01_schema, load_dq_config
 from iop.transform.dims import build_dim_plant, build_dim_sensor, build_dim_time
-from iop.transform.facts import build_fact_lab_quality, build_fact_process_hourly, compute_off_spec_threshold
+from iop.transform.facts import (
+    build_fact_lab_quality,
+    build_fact_process_hourly,
+    compute_off_spec_threshold,
+)
 
 
 def _read_silver(spark: SparkSession, cfg: Config, table: str):
@@ -23,7 +27,9 @@ def _read_silver(spark: SparkSession, cfg: Config, table: str):
 
 
 def _latest_batch_id(bronze_df) -> str:
-    row = bronze_df.select("_batch_id", "_ingested_at").orderBy(F.col("_ingested_at").desc()).first()
+    row = (
+        bronze_df.select("_batch_id", "_ingested_at").orderBy(F.col("_ingested_at").desc()).first()
+    )
     return row["_batch_id"]
 
 
@@ -53,9 +59,11 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
         "plant_key", F.lit(plant_key)
     )
 
-    all_hours = fact_process_hourly.select("hour_ts").unionByName(
-        fact_lab_quality.select("hour_ts")
-    ).unionByName(feed_quality.select("hour_ts"))
+    all_hours = (
+        fact_process_hourly.select("hour_ts")
+        .unionByName(fact_lab_quality.select("hour_ts"))
+        .unionByName(feed_quality.select("hour_ts"))
+    )
     dim_time = build_dim_time(all_hours, cfg.ml.shift_starts_hour)
     dim_sensor = build_dim_sensor(spark, dq_cfg)
     dim_plant = build_dim_plant(spark)
@@ -70,11 +78,17 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
     merge_into(spark, cfg, dim_sensor, gold_location(cfg, "dim_sensor"), ["sensor_key"])
     merge_into(spark, cfg, dim_plant, gold_location(cfg, "dim_plant"), ["plant_key"])
     merge_into(
-        spark, cfg, fact_process_hourly, gold_location(cfg, "fact_process_hourly"),
+        spark,
+        cfg,
+        fact_process_hourly,
+        gold_location(cfg, "fact_process_hourly"),
         ["hour_ts", "plant_key"],
     )
     merge_into(
-        spark, cfg, fact_lab_quality, gold_location(cfg, "fact_lab_quality"),
+        spark,
+        cfg,
+        fact_lab_quality,
+        gold_location(cfg, "fact_lab_quality"),
         ["hour_ts", "plant_key"],
     )
 
@@ -110,7 +124,9 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
     # the run; ML excludes them from training instead.
     min_completeness = dq_cfg["hour_completeness"]["min_completeness_pct"]
     total_hours = fact_process_hourly.count()
-    incomplete_hours = fact_process_hourly.filter(F.col("completeness_pct") < min_completeness).count()
+    incomplete_hours = fact_process_hourly.filter(
+        F.col("completeness_pct") < min_completeness
+    ).count()
 
     dq10_hours_flagged = lab_results.filter(F.col("lab_is_interpolated")).count()
 
@@ -132,7 +148,14 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
         # flag. Logged for traceability, always 0/passed.
         ("DQ07", run_id, checked_at, total_hours, 0, True),
         ("DQ08", run_id, checked_at, batch_bronze_count, batch_duplicates, dq08_passed),
-        ("DQ09", run_id, checked_at, fact_process_hourly.count(), 0 if dq09_passed else 1, dq09_passed),
+        (
+            "DQ09",
+            run_id,
+            checked_at,
+            fact_process_hourly.count(),
+            0 if dq09_passed else 1,
+            dq09_passed,
+        ),
         ("DQ10", run_id, checked_at, lab_results.count(), dq10_hours_flagged, True),
     ]
 
@@ -141,7 +164,10 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
         ["rule_id", "batch_id", "checked_at", "rows_checked", "rows_failed", "passed"],
     )
     merge_into(
-        spark, cfg, fact_dq_results, gold_location(cfg, "fact_dq_results"),
+        spark,
+        cfg,
+        fact_dq_results,
+        gold_location(cfg, "fact_dq_results"),
         ["rule_id", "batch_id"],
     )
 

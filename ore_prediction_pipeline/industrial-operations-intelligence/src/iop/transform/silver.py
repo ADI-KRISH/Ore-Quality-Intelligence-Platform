@@ -36,17 +36,26 @@ def run(spark: SparkSession, cfg: Config) -> StageResult:
     sensor_health = build_sensor_health(typed_ok_df, dq_cfg)
 
     merge_into(
-        spark, cfg, process_readings, silver_location(cfg, "process_readings"),
+        spark,
+        cfg,
+        process_readings,
+        silver_location(cfg, "process_readings"),
         ["_source_file", "_row_number"],
     )
     merge_into(
-        spark, cfg, quarantine_df, silver_location(cfg, "quarantine"),
+        spark,
+        cfg,
+        quarantine_df,
+        silver_location(cfg, "quarantine"),
         ["_source_file", "_row_number"],
     )
     merge_into(spark, cfg, lab_results, silver_location(cfg, "lab_results"), ["hour_ts"])
     merge_into(spark, cfg, feed_quality, silver_location(cfg, "feed_quality"), ["hour_ts"])
     merge_into(
-        spark, cfg, sensor_health, silver_location(cfg, "sensor_health"),
+        spark,
+        cfg,
+        sensor_health,
+        silver_location(cfg, "sensor_health"),
         ["hour_ts", "sensor"],
     )
 
